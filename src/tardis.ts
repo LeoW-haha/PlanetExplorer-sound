@@ -5,7 +5,6 @@ import { Settings } from './settings';
 let tardisModel: THREE.Object3D | null = null;
 let tardisLight: THREE.DirectionalLight | null = null;
 let settingsRef: Settings | null = null;
-let sound: THREE.PositionalAudio | null = null;
 
 export function loadTardis(scene: THREE.Scene, settings: Settings, listener: THREE.AudioListener): void {
   settingsRef = settings; // Store the settings reference
@@ -37,21 +36,21 @@ export function loadTardis(scene: THREE.Scene, settings: Settings, listener: THR
 
   //Adds the sound to the tardis
 
-  sound = new THREE.PositionalAudio(listener);
+  settingsRef.TardisSound = new THREE.PositionalAudio(listener);
 
   const audioLoader = new THREE.AudioLoader()
   audioLoader.load( 'sound/ambientTardis.ogg', (buffer) => {
-    sound?.setBuffer( buffer );
-    sound?.setLoop( true );
-    sound?.setVolume( 1 );
-    sound?.setRolloffFactor(3);
+    settingsRef?.TardisSound?.setBuffer( buffer );
+    settingsRef?.TardisSound?.setLoop( true );
+    settingsRef?.TardisSound?.setVolume( 1 );
+    settingsRef?.TardisSound?.setRolloffFactor(3);
   });
 
-  tardisModel?.add(sound); 
+  tardisModel?.add(settingsRef.TardisSound); 
 }
 
 export function playTardisSound(): void {
-  sound?.play();
+  settingsRef?.TardisSound?.play();
 }
 
 export function updateTardis(): void {

@@ -3,7 +3,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { Planet } from "./planet";
 import { Settings } from "./settings"
 import { collisionTest } from "./collisionTest.ts";
-import { loadTardis, updateTardis, playTardisSound} from './tardis';
+import { loadTardis, updateTardis} from './tardis';
 
 // I’m sure there’s a better name for this
 class Global {
@@ -48,30 +48,16 @@ class Global {
 
         //adds sound to the debug light
 
-        let ambientSun = new THREE.PositionalAudio(this.#listener);
+        settings.LightSound = new THREE.PositionalAudio(this.#listener);
         const audioLoader = new THREE.AudioLoader()
         audioLoader.load( 'sound/ambientSun.ogg', (buffer) => {
-            ambientSun.setBuffer( buffer );
-            ambientSun.setLoop( true );
-            ambientSun.setVolume( 0.25 );
-            ambientSun.setRolloffFactor(5);
+            settings.LightSound?.setBuffer( buffer );
+            settings.LightSound?.setLoop( true );
+            settings.LightSound?.setVolume( 0.25 );
+            settings.LightSound?.setRolloffFactor(2.5);
         });
         
-        this.#debugLightSphere.add(ambientSun);
-
-        
-        //Adds play button to play audio to fix the "not allowed to start" error, temp until I find a better solution
-
-        const play = document.getElementById( 'play' );
-        if (play != null) {
-            play.onclick = () => {
-                this.ActivePlanet.PlayAudio();
-                ambientSun.play();
-                playTardisSound();
-                play.style.display = "none";
-            }
-        }
-
+        this.#debugLightSphere.add(settings.LightSound);
     }
 
     Tick() {

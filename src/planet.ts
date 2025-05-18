@@ -9,8 +9,6 @@ export class Planet {
     // The percentage of the sphere’s radius by which it can be deformed. Domain [0, 1].
     #settings: Settings = new Settings()
     #scene: THREE.Scene
-    //#listener = new THREE.AudioListener()
-    #sound: THREE.PositionalAudio | null = null;
     #noise = new SimplexNoise()
 
     get Settings() { return this.#settings }
@@ -82,20 +80,20 @@ export class Planet {
 
     GenerateAudio(listener : THREE.AudioListener): void {
         const audioLoader = new THREE.AudioLoader()
-        this.#sound = new THREE.PositionalAudio(listener)
+        this.#settings.PlanetSound = new THREE.PositionalAudio(listener)
         audioLoader.load( 'sound/ambientPlanet.ogg', (buffer) => {
-            this.#sound?.setBuffer( buffer );
-            this.#sound?.setLoop( true );
-            this.#sound?.setVolume( 1 );
-            this.#sound?.setRolloffFactor(3);
-            this.#sound?.setRefDistance(this.Settings.Radius);
+            this.#settings.PlanetSound?.setBuffer( buffer );
+            this.#settings.PlanetSound?.setLoop( true );
+            this.#settings.PlanetSound?.setVolume( 1 );
+            this.#settings.PlanetSound?.setRolloffFactor(3);
+            this.#settings.PlanetSound?.setRefDistance(this.Settings.Radius);
         });
 
-        this.#sphere?.add(this.#sound);
+        this.#sphere?.add(this.#settings.PlanetSound);
     }
 
     PlayAudio() {
-        this.#sound?.play();
+        this.#settings.PlanetSound?.play();
     }
 
     //Updates the sound refDistance with the planet Radius
@@ -104,7 +102,7 @@ export class Planet {
         if (this.#sphere === null) return;
         let shader: THREE.ShaderMaterial = this.#sphere.material as THREE.ShaderMaterial;
         shader.uniforms.u_radius.value = this.Settings.Radius;
-        this.#sound?.setRefDistance(this.Settings.Radius);
+        this.#settings.PlanetSound?.setRefDistance(this.Settings.Radius);
         shader.uniforms.u_flatAColor.value = this.Settings.FlatAColor;
         shader.uniforms.u_flatBColor.value = this.Settings.FlatBColor;
         shader.uniforms.u_steepAColor.value = this.Settings.SteepAColor;
