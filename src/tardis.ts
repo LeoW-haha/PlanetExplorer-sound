@@ -5,7 +5,7 @@ import { Planet } from "./planet";
 
 
 let tardisModel: THREE.Object3D | null = null;
-//let tardisLight: THREE.DirectionalLight | null = null;
+let tardisLight: THREE.DirectionalLight | null = null;
 let settingsRef: Settings | null = null;
 let planetRef: Planet | null = null;
 
@@ -28,11 +28,11 @@ export function loadTardis(scene: THREE.Scene, settings: Settings, listener: THR
             tardisModel.name = 'TARDIS';
 
             // Create the directional light
-            //tardisLight = new THREE.DirectionalLight(0xffffff, 0.7);
-            //tardisLight.castShadow = true;
+            tardisLight = new THREE.DirectionalLight(0xffffff, 0.7);
+            tardisLight.castShadow = true;
 
-            //scene.add(tardisLight);
-            //scene.add(tardisLight.target);
+            scene.add(tardisLight);
+            scene.add(tardisLight.target);
             scene.add(tardisModel);
         },
         undefined,
@@ -68,23 +68,23 @@ export function updateTardis(): void {
         tardisModel.rotation.x += 0.002;
     }
 
-    if (/*tardisLight&& */ tardisModel && settingsRef) {
+    if (tardisLight &&  tardisModel && settingsRef) {
 
-        //tardisLight.position.copy(settingsRef.LightPos);
+        tardisLight.position.copy(settingsRef.LightPos);
         //tardisModel.position.copy(spawnPos(settingsRef.TardisPosition));
 
-        //tardisLight.target.position.copy(tardisModel.position);
-        //tardisLight.target.updateMatrixWorld();
+        tardisLight.target.position.copy(tardisModel.position);
+        tardisLight.target.updateMatrixWorld();
     }
 
 }
 
 
 export function disposeTardis(scene: THREE.Scene): void {
-/*    if (tardisLight != null) {
+    if (tardisLight != null) {
         scene.remove(tardisLight)
         tardisLight.dispose()
-    } */
+    } 
     if (tardisModel != null) {
         scene.remove(tardisModel);
         if (tardisModel.geometry) tardisModel.geometry.dispose();

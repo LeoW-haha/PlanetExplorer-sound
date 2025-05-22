@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { Settings } from "./settings"
-import VertexShader from "./shaders/vertex.glsl";
-import FragmentShader from "./shaders/fragment.glsl";
+import VertexShader from "./shaders/vertex_sun.glsl";
+import FragmentShader from "./shaders/fragment_sun.glsl";
 import { SimplexNoise } from 'three/examples/jsm/Addons.js';
 import { seededRandom } from 'three/src/math/MathUtils.js';
 
@@ -16,7 +16,15 @@ export class Sun {
     GenerateMesh() {
         if (this.#sphere !== null)
             this.#scene?.remove(this.#sphere)
-        this.#sphere = new THREE.Mesh(new THREE.SphereGeometry(this.#settings.SunRadius), new THREE.MeshBasicMaterial({ color: this.#settings.SunColor}));
+        this.#sphere = new THREE.Mesh(new THREE.SphereGeometry(this.#settings.SunRadius), new THREE.ShaderMaterial({
+            uniforms: {
+                u_Time: {value: 0.0},
+                u_color1: {value: this.#settings.SunColor},
+                u_color2: {value: this.#settings.SunColor}
+            },
+            vertexShader: VertexShader,
+            fragmentShader: FragmentShader,
+        }));
         this.#sphere.position.set(this.#settings.SunPosition.x, this.#settings.SunPosition.y, this.#settings.SunPosition.z)
         this.#scene?.add(this.#sphere)
     }

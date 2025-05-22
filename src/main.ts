@@ -26,6 +26,7 @@ class Global {
     get ActivePlanet() { return this.#activePlanet }
 
     GenerateNewPlanet() {
+        THREE.ColorManagement.enabled = false;
         this.#settings.Randomise(Math.random() * 100)
         if (this.ActivePlanet != null) {
             this.ActivePlanet.Mesh?.geometry.dispose()

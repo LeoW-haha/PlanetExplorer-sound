@@ -20,6 +20,7 @@ export class Settings {
     UseColorBanding: boolean = false
     NumberColorBands: number = 10
     CameraPos: THREE.Vector3 = new THREE.Vector3()
+    LightPos: THREE.Vector3 = new THREE.Vector3(15.0, 0.0, 0.0)
     LightColor: THREE.Color = new THREE.Color()
     LightSound: THREE.PositionalAudio | null = null;
     PlanetEmissivity: THREE.Color = new THREE.Color(0x000000)
@@ -28,7 +29,7 @@ export class Settings {
     PlanetSound: THREE.PositionalAudio | null = null;
     TardisPosition: THREE.Vector3 = new THREE.Vector3(7, 0, 0);
     TardisSound: THREE.PositionalAudio | null = null;
-    SunColor: THREE.Color = new THREE.Color(0xffaa00)
+    SunColor: THREE.Color = new THREE.Color(1.0, 0.4, 0.0)
     SunRadius: number = 0.5
     SunPosition: THREE.Vector3 = new THREE.Vector3(30, 0, 0)
     SunFolder: FolderApi | null = null
@@ -62,6 +63,7 @@ export class Settings {
         let rendering: FolderApi = this.Pane.addFolder({ title: "Rendering" }).on("change", planet.UpdateUniforms.bind(planet))
         rendering.addBinding(this, "UseColorBanding", { label: "Use Color Banding" })
         rendering.addBinding(this, "NumberColorBands", { min: 1, max: 25, step: 1, label: "Number of Color Bands" })
+        rendering.addBinding(this, "LightPos", { label: "Light Position" })
         rendering.addBinding(this, "LightColor", { color: { type: "float" }, label: "Light Color" })
         rendering.addBinding(this, "PlanetEmissivity", { color: { type: "float" }, label: "Planet Emissivity" })
         rendering.addBinding(this, "PlanetRoughness", { min: 0.0, max: 1.0, step: 0.01, label: "Planet Roughness" })
