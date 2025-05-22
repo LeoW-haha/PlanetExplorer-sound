@@ -32,7 +32,7 @@ export class Settings {
     SunColor: THREE.Color = new THREE.Color(1.0, 0.4, 0.0)
     SunRadius: number = 0.5
     SunPosition: THREE.Vector3 = new THREE.Vector3(30, 0, 0)
-    SunZoom: number = 2.0
+    SunZoom: number = 0.2
     SunFolder: FolderApi | null = null
     SoundOn: boolean = false
 
