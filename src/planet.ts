@@ -12,6 +12,7 @@ export class Planet {
     #scene: THREE.Scene
     #noises: SimplexNoise[] = []
     #noiseOffsets: THREE.Vector3[] = []
+    #clock = new THREE.Clock();
 
     get Settings() { return this.#settings }
     get Mesh() { return this.#sphere }

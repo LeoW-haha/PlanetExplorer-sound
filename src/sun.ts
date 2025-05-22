@@ -12,6 +12,7 @@ export class Sun {
     #scene: THREE.Scene | null = null
     #noises: SimplexNoise[] = []
     #noiseOffsets: THREE.Vector3[] = []
+    #clock = new THREE.Clock();
 
     GenerateMesh() {
         if (this.#sphere !== null)
@@ -19,8 +20,9 @@ export class Sun {
         this.#sphere = new THREE.Mesh(new THREE.SphereGeometry(this.#settings.SunRadius), new THREE.ShaderMaterial({
             uniforms: {
                 u_Time: {value: 0.0},
+                u_zoom: {value: this.#settings.SunZoom},
+                u_radius: {value: this.#settings.SunRadius},
                 u_color1: {value: this.#settings.SunColor},
-                u_color2: {value: this.#settings.SunColor}
             },
             vertexShader: VertexShader,
             fragmentShader: FragmentShader,
@@ -55,6 +57,13 @@ export class Sun {
 
     UpdateMesh() {
         this.GenerateMesh();
+    }
+
+    Tick() {
+        const elapsedTime = this.#clock.getElapsedTime();
+        if (this.#sphere != null) {
+            (this.#sphere.material as THREE.ShaderMaterial).uniforms.u_Time.value = elapsedTime;
+        }
     }
 
     constructor(settings: Settings, scene: THREE.Scene, listener : THREE.AudioListener) {

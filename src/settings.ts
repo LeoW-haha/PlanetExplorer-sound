@@ -32,6 +32,7 @@ export class Settings {
     SunColor: THREE.Color = new THREE.Color(1.0, 0.4, 0.0)
     SunRadius: number = 0.5
     SunPosition: THREE.Vector3 = new THREE.Vector3(30, 0, 0)
+    SunZoom: number = 2.0
     SunFolder: FolderApi | null = null
     SoundOn: boolean = false
 
@@ -95,7 +96,8 @@ export class Settings {
         }
         this.SunFolder = this.Pane.addFolder({title: "Sun"})
         this.SunFolder.addBinding(this, 'SunColor', {color: { type: "float" }, label: "Sun Colour"}).on("change", sun.UpdateMesh.bind(sun));
-        this.SunFolder.addBinding(this, 'SunRadius', {min: 0.0,  step: 1, label: "Sun Radius"}).on("change", sun.UpdateMesh.bind(sun));
+        this.SunFolder.addBinding(this, 'SunZoom', {min: 0.0,  step: 0.1, label: "Sun Shader Zoom"}).on("change", sun.UpdateMesh.bind(sun));
+        this.SunFolder.addBinding(this, 'SunRadius', {min: 0.0,  step: 0.5, label: "Sun Radius"}).on("change", sun.UpdateMesh.bind(sun));
         this.SunFolder.addBinding(this, 'SunPosition', {label: "Sun Position"}).on("change", sun.UpdatePosition.bind(sun));
     }
 
