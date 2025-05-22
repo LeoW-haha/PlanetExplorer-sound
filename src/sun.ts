@@ -42,6 +42,7 @@ export class Sun {
 
     UpdatePosition() {
         this.#sphere?.position.set(this.#settings.SunPosition.x, this.#settings.SunPosition.y, this.#settings.SunPosition.z);
+        this.#light?.position.set(this.#settings.SunPosition.x, this.#settings.SunPosition.y, this.#settings.SunPosition.z);
     }
 
     UpdateMesh() {
