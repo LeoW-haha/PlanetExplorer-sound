@@ -11,7 +11,7 @@ uniform float u_radius;
 
 void main()
 {
-    float pat = snoise(v_vertexPos * (u_zoom / u_radius) * u_Time) - u_radius;
+    float pat = fbm(v_vertexPos * (u_zoom / u_radius) * u_Time) - u_radius;
     vec3 newPos = v_vertexPos + v_vertexNormal * pat; 
 
     gl_FragColor = vec4(vec3(u_color1) + vec3(newPos.x), 1.0f);
