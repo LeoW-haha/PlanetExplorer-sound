@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { Pane, FolderApi, BladeApi } from "tweakpane";
 import { Planet } from "./planet";
+import { Sun } from "./sun";
 import { seededRandom } from "three/src/math/MathUtils.js";
 
 export class Settings {
@@ -21,14 +22,23 @@ export class Settings {
     CameraPos: THREE.Vector3 = new THREE.Vector3()
     LightPos: THREE.Vector3 = new THREE.Vector3(15.0, 0.0, 0.0)
     LightColor: THREE.Color = new THREE.Color()
+    LightSound: THREE.PositionalAudio | null = null;
     PlanetEmissivity: THREE.Color = new THREE.Color(0x000000)
     PlanetRoughness: number = 0.65
     PlanetReflectance: THREE.Color = new THREE.Color()
+    PlanetSound: THREE.PositionalAudio | null = null;
+    TardisPosition: THREE.Vector3 = new THREE.Vector3(7, 0, 0);
+    TardisSound: THREE.PositionalAudio | null = null;
+    SunColor: THREE.Color = new THREE.Color(0xffaa00)
+    SunRadius: number = 0.5
+    SunPosition: THREE.Vector3 = new THREE.Vector3(30, 0, 0)
+    SunFolder: FolderApi | null = null
+    SoundOn: boolean = false
 
     WidthSegments = 256
     HeightSegments = 256
 
-    Pane: Pane = new Pane({ title: "Planet Configuration" })
+    Pane: Pane = new Pane({ title: "Planet Explorer Configuration" })
     PlanetBindings: BladeApi[] = []
 
     SetupPlanetListeners(planet: Planet): void {
@@ -58,7 +68,35 @@ export class Settings {
         rendering.addBinding(this, "PlanetEmissivity", { color: { type: "float" }, label: "Planet Emissivity" })
         rendering.addBinding(this, "PlanetRoughness", { min: 0.0, max: 1.0, step: 0.01, label: "Planet Roughness" })
         rendering.addBinding(this, "PlanetReflectance", { color: { type: "float" }, label: "Planet Reflectance" })
-        this.PlanetBindings = [radius, planetCols, planetNoise, rendering]
+        rendering.addBinding(this, "TardisPosition", { label: "TARDIS Position" });
+        let sound: FolderApi = this.Pane.addFolder({ title: "Sound" }).on("change", planet.UpdateUniforms.bind(planet))
+        let soundButton = sound.addButton({title:"Toggle Sound"});
+        this.PlanetBindings = [radius, planetCols, planetNoise, rendering, sound]
+
+        //Set up "Play Sound" button
+        soundButton.on("click", ()=>{
+            if (this.SoundOn) {
+                this.LightSound?.pause();
+                this.PlanetSound?.pause();
+                this.TardisSound?.pause();    
+                this.SoundOn = false;            
+            } else {
+                this.LightSound?.play();
+                this.PlanetSound?.play();
+                this.TardisSound?.play();
+                this.SoundOn = true;            
+            }
+        })
+    }
+
+    SetupSunListeners(sun: Sun) {
+        if (this.SunFolder != null) {
+            this.SunFolder.dispose();
+        }
+        this.SunFolder = this.Pane.addFolder({title: "Sun"})
+        this.SunFolder.addBinding(this, 'SunColor', {color: { type: "float" }, label: "Sun Colour"}).on("change", sun.UpdateMesh.bind(sun));
+        this.SunFolder.addBinding(this, 'SunRadius', {min: 0.0,  step: 1, label: "Sun Radius"}).on("change", sun.UpdateMesh.bind(sun));
+        this.SunFolder.addBinding(this, 'SunPosition', {label: "Sun Position"}).on("change", sun.UpdatePosition.bind(sun));
     }
 
     Randomise(seed: number) {

@@ -4,8 +4,8 @@ import { Planet } from "./planet";
 import { Settings } from "./settings"
 import { collisionTest } from "./collisionTest.ts";
 import { stars } from "./stars.ts";
-
-
+import { disposeTardis, loadTardis, updateTardis } from './tardis.ts';
+import { Sun } from "./sun.ts";
 
 // I’m sure there’s a better name for this
 class Global {
@@ -15,9 +15,13 @@ class Global {
     #scene: THREE.Scene
     #renderer: THREE.WebGLRenderer
     #testScene: collisionTest
-    #debugLightSphere: THREE.Mesh
     #settings: Settings
     #stars: stars
+    #sun: Sun
+    #tardis
+    #listener: THREE.AudioListener | null = null
+    #debugLightSphere: THREE.Mesh
+    #mouse: THREE.Vector2 = new THREE.Vector2(0, 0);
 
     get ActivePlanet() { return this.#activePlanet }
 
@@ -31,21 +35,41 @@ class Global {
                 this.ActivePlanet.Mesh?.material.dispose()
             this.#scene.remove(this.ActivePlanet.Mesh!)
         }
-        this.#activePlanet = new Planet(this.#settings, this.#scene)
+        if (this.#testScene != null) {
+            this.#testScene.disposeAll();
+        }
+        if (this.#stars != null) {
+            this.#stars.disposeStars();
+        }
+        if (this.#sun != null) {
+            this.#sun.Mesh?.geometry.dispose()
+            this.#scene.remove(this.#sun.Mesh!)
+        }
+        if (this.#listener == null) {
+            this.#listener = new THREE.AudioListener();
+        }
+        this.#activePlanet = new Planet(this.#settings, this.#scene, this.#listener)
+        this.#testScene = new collisionTest(this.#scene, this.#activePlanet, this.#camera);
+        this.#stars = new stars(this.#scene);
+        this.#sun = new Sun(this.#settings, this.#scene, this.#listener);
+        this.#stars.generateStars();
+        disposeTardis(this.#scene)
+        loadTardis(this.#scene, this.#settings, this.#listener, this.#activePlanet);
     }
 
     constructor() {
         this.#renderer = new THREE.WebGLRenderer();
         this.#renderer.setSize(window.innerWidth, window.innerHeight);
+        this.#renderer.shadowMap.enabled = true;
         document.body.appendChild(this.#renderer.domElement);
         this.#scene = new THREE.Scene();
+        this.#listener = new THREE.AudioListener();
         this.#camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-       this.#camera.position.set(10, 10, 10)
-       this.#camera.lookAt(new THREE.Vector3(0, 0, 0))
-       this.#controls = new OrbitControls(this.#camera, this.#renderer.domElement)
+        this.#camera.position.set(10, 10, 10)
+        this.#camera.lookAt(new THREE.Vector3(0, 0, 0))
+        this.#camera.add(this.#listener);
+        this.#controls = new OrbitControls(this.#camera, this.#renderer.domElement)
         this.#renderer.setAnimationLoop(this.Tick.bind(this));
-        this.#stars = new stars(this.#scene);
-
         this.#settings = new Settings();
         this.#settings.Pane.addButton({
             title: "Generate",
@@ -54,18 +78,40 @@ class Global {
         this.GenerateNewPlanet()
         let shader: THREE.ShaderMaterial = this.ActivePlanet.Mesh!.material as THREE.ShaderMaterial;
         shader.uniforms.u_cameraPos.value = this.#camera.position;
-        this.#testScene = new collisionTest(this.#scene, this.#activePlanet, this.#camera);
-        this.#stars.generateStars();
+
+        this.mouseMove = this.mouseMove.bind(this);
+        this.mouseClick = this.mouseClick.bind(this);
+        document.addEventListener('mousemove', this.mouseMove);
+        document.addEventListener('click', this.mouseClick);
+
     }
 
     Tick() {
         this.#controls.update()
         this.#renderer.render(this.#scene, this.#camera);
-
+        updateTardis();
         // Update camera pos…  this had sure better be temporary
         let shader: THREE.ShaderMaterial = this.ActivePlanet.Mesh!.material as THREE.ShaderMaterial;
         shader.uniforms.u_cameraPos.value = this.#camera.position;
         this.#testScene.update();
+
+
+    }
+
+    mouseMove(event: MouseEvent) {
+        this.#mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        this.#mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+    }
+
+    mouseClick(event: MouseEvent) {
+        const raycaster = new THREE.Raycaster();
+        raycaster.setFromCamera(this.#mouse, this.#camera);
+        const intersects = raycaster.intersectObjects(this.#scene.children, true);
+
+        if (intersects.length > 0 && intersects[0].object.name === "Glass_Box") {
+            console.log("tardistime");
+            this.GenerateNewPlanet()
+        }
     }
 }
 
