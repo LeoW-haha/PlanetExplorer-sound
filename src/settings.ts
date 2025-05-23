@@ -29,9 +29,9 @@ export class Settings {
     PlanetSound: THREE.PositionalAudio | null = null;
     TardisPosition: THREE.Vector3 = new THREE.Vector3(7, 0, 0);
     TardisSound: THREE.PositionalAudio | null = null;
-    SunColor: THREE.Color = new THREE.Color(1.0, 0.4, 0.0)
-    SunRadius: number = 0.5
-    SunPosition: THREE.Vector3 = new THREE.Vector3(30, 0, 0)
+    SunColor: THREE.Color = new THREE.Color(Math.random(), Math.random(), Math.random())
+    SunRadius: number = 500
+    SunPosition: THREE.Vector3 = new THREE.Vector3(30000.0, 0.0, 0)
     SunZoom: number = 0.2
     SunFolder: FolderApi | null = null
     SoundOn: boolean = false

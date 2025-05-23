@@ -6,6 +6,7 @@ import { collisionTest } from "./collisionTest.ts";
 import { stars } from "./stars.ts";
 import { disposeTardis, loadTardis, updateTardis } from './tardis.ts';
 import { Sun } from "./sun.ts";
+import { Sky } from "./skycolor.js";
 
 // I’m sure there’s a better name for this
 class Global {
@@ -22,6 +23,7 @@ class Global {
     #listener: THREE.AudioListener | null = null
     #debugLightSphere: THREE.Mesh
     #mouse: THREE.Vector2 = new THREE.Vector2(0, 0);
+    sky: Sky | null = null
 
     get ActivePlanet() { return this.#activePlanet }
 
@@ -60,12 +62,13 @@ class Global {
 
     constructor() {
         this.#renderer = new THREE.WebGLRenderer();
+        this.#renderer.toneMapping = THREE.ACESFilmicToneMapping;
         this.#renderer.setSize(window.innerWidth, window.innerHeight);
         this.#renderer.shadowMap.enabled = true;
         document.body.appendChild(this.#renderer.domElement);
         this.#scene = new THREE.Scene();
         this.#listener = new THREE.AudioListener();
-        this.#camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        this.#camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100000);
         this.#camera.position.set(10, 10, 10)
         this.#camera.lookAt(new THREE.Vector3(0, 0, 0))
         this.#camera.add(this.#listener);
@@ -85,10 +88,38 @@ class Global {
         document.addEventListener('mousemove', this.mouseMove);
         document.addEventListener('click', this.mouseClick);
 
+
+        //Adds sky experimental
+
+        this.sky = new Sky();
+        this.sky.scale.setScalar( 450000 );
+
+        const phi = THREE.MathUtils.degToRad( 90 );
+        const theta = THREE.MathUtils.degToRad( 180 );
+        const sunPosition = new THREE.Vector3().setFromSphericalCoords( 1, phi, theta );
+
+        this.sky.material.uniforms.sunPosition.value = this.#settings.SunPosition;
+        this.sky.material.uniforms.rayleigh.value = 0.0;
+        this.sky.material.uniforms.ubasecolour.value = this.#settings.SunColor;
+        this.#renderer.toneMappingExposure = 0.1;
+
+        this.#scene.add( this.sky ); 
+
+    }
+
+
+    clamp(number : number, min : number, max : number) {
+        return Math.max(min, Math.min(number, max));
     }
 
     Tick() {
-        this.#sun.Tick();
+        if (this.sky != null) {
+        let planetPos = this.ActivePlanet.Mesh!.position
+        let cameraDistance = this.#camera.position.distanceTo(planetPos) - this.#settings.Radius;
+        this.#renderer.toneMappingExposure = this.clamp(0.75/cameraDistance, 0.1, 0.8);
+            this.sky.material.uniforms.rayleigh.value = this.clamp(0.75/cameraDistance, 0.0, 0.8);
+        }
+        this.#sun?.Tick();
         this.#controls.update()
         this.#renderer.render(this.#scene, this.#camera);
         updateTardis();
