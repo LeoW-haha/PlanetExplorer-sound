@@ -116,7 +116,7 @@ class Global {
         if (this.sky != null) {
         let planetPos = this.ActivePlanet.Mesh!.position
         let cameraDistance = this.#camera.position.distanceTo(planetPos) - this.#settings.Radius;
-        this.#renderer.toneMappingExposure = this.clamp(0.75/cameraDistance, 0.1, 0.8);
+        this.#renderer.toneMappingExposure = this.clamp(0.75/cameraDistance, 0.05, 0.8);
             this.sky.material.uniforms.rayleigh.value = this.clamp(0.75/cameraDistance, 0.0, 0.8);
         }
         this.#sun?.Tick();
