@@ -114,10 +114,16 @@ class Global {
 
     Tick() {
         if (this.sky != null) {
-        let planetPos = this.ActivePlanet.Mesh!.position
-        let cameraDistance = this.#camera.position.distanceTo(planetPos) - this.#settings.Radius;
-        this.#renderer.toneMappingExposure = this.clamp(0.75/cameraDistance, 0.05, 0.8);
+            let planetPos = this.ActivePlanet.Mesh!.position
+            let planetBrightPos = new THREE.Vector3(this.ActivePlanet.Mesh!.position.x + this.#settings.Radius, this.ActivePlanet.Mesh!.position.y, this.ActivePlanet.Mesh!.position.z)
+            let cameraDistance = this.#camera.position.distanceTo(planetPos) - this.#settings.Radius;
+            let cameraDistanceBright = this.#camera.position.distanceTo(planetBrightPos);
+            this.#renderer.toneMappingExposure = this.clamp(0.75/cameraDistance, 0.05, 0.8);
             this.sky.material.uniforms.rayleigh.value = this.clamp(0.75/cameraDistance, 0.0, 0.8);
+            if (cameraDistanceBright > this.#settings.Radius * 0.5 * Math.PI) {
+                this.#renderer.toneMappingExposure = this.clamp(1/cameraDistanceBright, 0.05, 0.8);
+                this.sky.material.uniforms.rayleigh.value = this.clamp(1/cameraDistanceBright, 0.0, 0.8);
+            }
         }
         this.#sun?.Tick();
         this.#controls.update()
