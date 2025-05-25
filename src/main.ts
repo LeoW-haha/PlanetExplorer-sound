@@ -91,53 +91,14 @@ class Global {
 
         //Adds sky experimental
 
-        this.sky = new Sky();
-        this.sky.scale.setScalar( 450000 );
-
-        const phi = THREE.MathUtils.degToRad( 90 );
-        const theta = THREE.MathUtils.degToRad( 180 );
-        const sunPosition = new THREE.Vector3().setFromSphericalCoords( 1, phi, theta );
-
-        this.sky.material.uniforms.sunPosition.value = this.#settings.SunPosition;
-        this.sky.material.uniforms.rayleigh.value = 0.0;
-        this.sky.material.uniforms.ubasecolour.value = this.#settings.SunColor;
-        this.#renderer.toneMappingExposure = 0.1;
-
-        this.#scene.add( this.sky ); 
+        this.sky = new Sky(this.#settings, this.#scene, this.#renderer);
 
     }
-
-
-    //Math equation for sky and atmosphere render
-
-    clamp(number : number, min : number, max : number) {
-        return Math.max(min, Math.min(number, max));
-    }
-
-    lerp(a: number, b: number, t: number) {
-        return a + (b - a) * t;
-    }
-
 
     Tick() {
-        if (this.sky != null) {
-            let planetPos = this.ActivePlanet.Mesh!.position
-
-            //Finds vector of planet bright side and camera distance to the planet's bright side
-
-            let planetBrightPos = new THREE.Vector3(this.ActivePlanet.Mesh!.position.x + this.#settings.Radius, this.ActivePlanet.Mesh!.position.y, this.ActivePlanet.Mesh!.position.z)
-            let cameraDistanceBright = this.#camera.position.distanceTo(new THREE.Vector3(planetBrightPos.x, this.#camera.position.y, planetBrightPos.z));
-
-            //Calculates tonemap and rayleigh for the bright and dark side depending on camera distance
-
-            let toneMapNight = this.clamp(1.5/cameraDistanceBright, 0.05, 0.8)
-            let rayleighNight = this.clamp(1.5/cameraDistanceBright, 0.0, 0.8)
-            this.#renderer.toneMappingExposure = toneMapNight;
-            this.sky.material.uniforms.rayleigh.value = rayleighNight;
-        }
+        this.sky!.tick(this.#camera, this.#settings, this.#renderer, this.#activePlanet);
 
         //Updates Sun
-
         this.#sun?.Tick();
         this.#controls.update()
         this.#renderer.render(this.#scene, this.#camera);

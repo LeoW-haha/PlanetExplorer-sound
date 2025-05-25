@@ -1,11 +1,5 @@
-import {
-	BackSide,
-	BoxGeometry,
-	Mesh,
-	ShaderMaterial,
-	UniformsUtils,
-	Vector3
-} from 'three';
+import * as THREE from "three";
+import { Settings } from "./settings"
 
 /**
  * Based on "A Practical Analytic Model for Daylight"
@@ -21,24 +15,65 @@ import {
  * Three.js integration by zz85 http://twitter.com/blurspline
 */
 
-export class Sky extends Mesh {
+export class Sky extends THREE.Mesh {
 
-	constructor() {
+	constructor(settings, scene, renderer) {
 
 		const shader = Sky.SkyShader;
 
-		const material = new ShaderMaterial( {
+		const material = new THREE.ShaderMaterial( {
 			name: shader.name,
-			uniforms: UniformsUtils.clone( shader.uniforms ),
+			uniforms: THREE.UniformsUtils.clone( shader.uniforms ),
 			vertexShader: shader.vertexShader,
 			fragmentShader: shader.fragmentShader,
-			side: BackSide,
+			side: THREE.BackSide,
 			depthWrite: false
 		} );
 
-		super( new BoxGeometry( 1, 1, 1 ), material );
+		super( new THREE.BoxGeometry( 1, 1, 1 ), material );
 
 		this.isSky = true;
+
+		this.scale.setScalar( 450000 );
+
+		const phi = THREE.MathUtils.degToRad( 90 );
+		const theta = THREE.MathUtils.degToRad( 180 );
+		const sunPosition = new THREE.Vector3().setFromSphericalCoords( 1, phi, theta );
+
+		this.material.uniforms.sunPosition.value = settings.SunPosition;
+		this.material.uniforms.rayleigh.value = 0.0;
+		this.material.uniforms.ubasecolour.value = settings.SunColor;
+		renderer.toneMappingExposure = 0.1;
+
+		
+        scene.add(this); 
+
+	}
+
+	//Math equation for sky and atmosphere render
+
+    clamp(number, min, max) {
+        return Math.max(min, Math.min(number, max));
+    }
+
+    lerp(a, b, t) {
+        return a + (b - a) * t;
+    }
+
+	tick(camera, settings, renderer, activePlanet) {
+		if (camera != null && settings != null && activePlanet != null) {
+				let planetPos = activePlanet.Mesh.position
+
+				//Finds vector of planet bright side and camera distance to the planet's bright side
+				let planetBrightPos = new THREE.Vector3(activePlanet.Mesh.position.x + settings.Radius, activePlanet.Mesh.position.y, activePlanet.Mesh.position.z)
+				let cameraDistanceBright = camera.position.distanceTo(new THREE.Vector3(planetBrightPos.x, camera.position.y, planetBrightPos.z));
+
+				//Calculates tonemap and rayleigh for the bright and dark side depending on camera distance
+				let toneMapNight = this.clamp(1.5/cameraDistanceBright, 0.05, 0.8)
+				let rayleighNight = this.clamp(1.5/cameraDistanceBright, 0.0, 0.8)
+				renderer.toneMappingExposure = toneMapNight;
+				this.material.uniforms.rayleigh.value = rayleighNight;
+		}
 
 	}
 
@@ -53,9 +88,9 @@ Sky.SkyShader = {
 		'rayleigh': { value: 1 },
 		'mieCoefficient': { value: 0.005 },
 		'mieDirectionalG': { value: 0.8 },
-		'sunPosition': { value: new Vector3() },
-		'up': { value: new Vector3( 0, 1, 0 ) },
-		'ubasecolour' : { value: new Vector3(1,1,1)}
+		'sunPosition': { value: new THREE.Vector3() },
+		'up': { value: new THREE.Vector3( 0, 1, 0 ) },
+		'ubasecolour' : { value: new THREE.Vector3(1,1,1)}
 	},
 
 	vertexShader: /* glsl */`
