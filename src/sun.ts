@@ -59,6 +59,7 @@ export class Sun {
         this.GenerateMesh();
     }
 
+    //Update method
     Tick() {
         const elapsedTime = this.#clock.getElapsedTime();
         if (this.#sphere != null) {
