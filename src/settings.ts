@@ -33,6 +33,12 @@ export class Settings {
     SunRadius: number = 500
     SunPosition: THREE.Vector3 = new THREE.Vector3(30000.0, 0.0, 0)
     SunZoom: number = 0.2
+    ToneMapFactor: number = 1.5
+    ToneMapMin: number = 0.05
+    ToneMapMax: number = 0.8
+    RayleighFactor: number = 1.5
+    RayleighMin: number = 0
+    RayleighMax: number = 0.8
     SunFolder: FolderApi | null = null
     SoundOn: boolean = false
 
@@ -99,6 +105,12 @@ export class Settings {
         this.SunFolder.addBinding(this, 'SunZoom', {min: 0.0,  step: 0.1, label: "Sun Shader Zoom"}).on("change", sun.UpdateMesh.bind(sun));
         this.SunFolder.addBinding(this, 'SunRadius', {min: 0.0,  step: 0.5, label: "Sun Radius"}).on("change", sun.UpdateMesh.bind(sun));
         this.SunFolder.addBinding(this, 'SunPosition', {label: "Sun Position"}).on("change", sun.UpdatePosition.bind(sun));
+        this.SunFolder.addBinding(this, 'ToneMapFactor', {min: 0.0, step: 0.1, label: "ToneMap Factor"}).on("change", sun.UpdatePosition.bind(sun));
+        this.SunFolder.addBinding(this, 'ToneMapMin', {min: 0.0, max: 1, label: "ToneMap Minimum"}).on("change", sun.UpdatePosition.bind(sun));
+        this.SunFolder.addBinding(this, 'ToneMapMax', {min: 0.0, max: 1, label: "ToneMap Maximum"}).on("change", sun.UpdatePosition.bind(sun));
+        this.SunFolder.addBinding(this, 'RayleighFactor', {min: 0.0, step: 0.1, label: "Rayleigh Factor"}).on("change", sun.UpdatePosition.bind(sun));
+        this.SunFolder.addBinding(this, 'RayleighMin', {min: 0.0, max: 1, label: "Rayleigh Minimum"}).on("change", sun.UpdatePosition.bind(sun));
+        this.SunFolder.addBinding(this, 'RayleighMax', {min: 0.0, max: 1, label: "Rayleigh Maximum"}).on("change", sun.UpdatePosition.bind(sun));
     }
 
     Randomise(seed: number) {

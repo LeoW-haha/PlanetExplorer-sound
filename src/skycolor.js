@@ -36,10 +36,6 @@ export class Sky extends THREE.Mesh {
 
 		this.scale.setScalar( 450000 );
 
-		const phi = THREE.MathUtils.degToRad( 90 );
-		const theta = THREE.MathUtils.degToRad( 180 );
-		const sunPosition = new THREE.Vector3().setFromSphericalCoords( 1, phi, theta );
-
 		this.material.uniforms.sunPosition.value = settings.SunPosition;
 		this.material.uniforms.rayleigh.value = 0.0;
 		this.material.uniforms.ubasecolour.value = settings.SunColor;
@@ -69,8 +65,8 @@ export class Sky extends THREE.Mesh {
 				let cameraDistanceBright = camera.position.distanceTo(new THREE.Vector3(planetBrightPos.x, camera.position.y, planetBrightPos.z));
 
 				//Calculates tonemap and rayleigh for the bright and dark side depending on camera distance
-				let toneMapNight = this.clamp(1.5/cameraDistanceBright, 0.05, 0.8)
-				let rayleighNight = this.clamp(1.5/cameraDistanceBright, 0.0, 0.8)
+				let toneMapNight = this.clamp(settings.ToneMapFactor/cameraDistanceBright, settings.ToneMapMin, settings.ToneMapMax)
+				let rayleighNight = this.clamp(settings.RayleighFactor/cameraDistanceBright, settings.RayleighMin, settings.RayleighMax)
 				renderer.toneMappingExposure = toneMapNight;
 				this.material.uniforms.rayleigh.value = rayleighNight;
 		}
