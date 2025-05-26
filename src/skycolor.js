@@ -62,7 +62,7 @@ export class Sky extends THREE.Mesh {
 
 				//Finds vector of planet bright side and camera distance to the planet's bright side
 				let planetBrightPos = new THREE.Vector3(activePlanet.Mesh.position.x + settings.Radius, activePlanet.Mesh.position.y, activePlanet.Mesh.position.z)
-				let cameraDistanceBright = camera.position.distanceTo(new THREE.Vector3(planetBrightPos.x, camera.position.y, planetBrightPos.z));
+				let cameraDistanceBright = camera.position.distanceTo(new THREE.Vector3(planetBrightPos.x, planetBrightPos.y + camera.position.y, planetBrightPos.z));
 
 				//Calculates tonemap and rayleigh for the bright and dark side depending on camera distance
 				let toneMapNight = this.clamp(settings.ToneMapFactor/cameraDistanceBright, settings.ToneMapMin, settings.ToneMapMax)
