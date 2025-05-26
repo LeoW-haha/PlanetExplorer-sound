@@ -97,8 +97,6 @@ class Global {
 
     Tick() {
         this.sky!.tick(this.#camera, this.#settings, this.#renderer, this.#activePlanet);
-
-        //Updates Sun
         this.#sun?.Tick();
         this.#controls.update()
         this.#renderer.render(this.#scene, this.#camera);

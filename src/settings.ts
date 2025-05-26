@@ -32,7 +32,8 @@ export class Settings {
     SunColor: THREE.Color = new THREE.Color(Math.random(), Math.random(), Math.random())
     SunRadius: number = 500
     SunPosition: THREE.Vector3 = new THREE.Vector3(30000.0, 0.0, 0)
-    SunZoom: number = 0.2
+    SunZoom: number = 2
+    SunSpeed: number = 0.2
     ToneMapFactor: number = 1.5
     ToneMapMin: number = 0.05
     ToneMapMax: number = 0.8
@@ -103,6 +104,7 @@ export class Settings {
         this.SunFolder = this.Pane.addFolder({title: "Sun"})
         this.SunFolder.addBinding(this, 'SunColor', {color: { type: "float" }, label: "Sun Colour"}).on("change", sun.UpdateMesh.bind(sun));
         this.SunFolder.addBinding(this, 'SunZoom', {min: 0.0,  step: 0.1, label: "Sun Shader Zoom"}).on("change", sun.UpdateMesh.bind(sun));
+        this.SunFolder.addBinding(this, 'SunSpeed', {min: 0.0,  step: 0.1, label: "Sun Shader Speed"}).on("change", sun.UpdateMesh.bind(sun));
         this.SunFolder.addBinding(this, 'SunRadius', {min: 0.0,  step: 0.5, label: "Sun Radius"}).on("change", sun.UpdateMesh.bind(sun));
         this.SunFolder.addBinding(this, 'SunPosition', {label: "Sun Position"}).on("change", sun.UpdatePosition.bind(sun));
         this.SunFolder.addBinding(this, 'ToneMapFactor', {min: 0.0, step: 0.1, label: "ToneMap Factor"}).on("change", sun.UpdatePosition.bind(sun));

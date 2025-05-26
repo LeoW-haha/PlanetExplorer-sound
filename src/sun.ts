@@ -23,6 +23,7 @@ export class Sun {
                 u_zoom: {value: this.#settings.SunZoom},
                 u_radius: {value: this.#settings.SunRadius},
                 u_color1: {value: this.#settings.SunColor},
+                u_speed: {value: this.#settings.SunSpeed}
             },
             vertexShader: VertexShader,
             fragmentShader: FragmentShader,
