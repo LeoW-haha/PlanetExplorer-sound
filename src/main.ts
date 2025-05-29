@@ -5,8 +5,10 @@ import { Settings } from "./settings"
 import { collisionTest } from "./collisionTest.ts";
 import { stars } from "./stars.ts";
 import { disposeTardis, loadTardis, updateTardis } from './tardis.ts';
+import { disposeMelon, loadMelon, spawnCloud, disposeClouds, melonModel } from './melon.ts';
 import { Sun } from "./sun.ts";
 import { Sky } from "./skycolor.js";
+import { Helper } from './helper';
 
 // I’m sure there’s a better name for this
 class Global {
@@ -20,6 +22,8 @@ class Global {
     #stars: stars
     #sun: Sun
     #tardis
+    #helper: Helper;
+    #wasEPressed: boolean = false;
     #listener: THREE.AudioListener | null = null
     #debugLightSphere: THREE.Mesh
     #mouse: THREE.Vector2 = new THREE.Vector2(0, 0);
@@ -58,6 +62,10 @@ class Global {
         this.#stars.generateStars();
         disposeTardis(this.#scene)
         loadTardis(this.#scene, this.#settings, this.#listener, this.#activePlanet);
+        disposeMelon(this.#scene)
+        loadMelon(this.#scene, this.#settings, this.#activePlanet);
+        disposeClouds(this.#scene); 
+        this.sky = new Sky(this.#settings, this.#scene, this.#renderer);
     }
 
     constructor() {
@@ -75,6 +83,8 @@ class Global {
         this.#controls = new OrbitControls(this.#camera, this.#renderer.domElement)
         this.#renderer.setAnimationLoop(this.Tick.bind(this));
         this.#settings = new Settings();
+        this.#helper = new Helper();
+        this.#helper.listener();
         this.#settings.Pane.addButton({
             title: "Generate",
             label: "New Planet"
@@ -88,15 +98,10 @@ class Global {
         document.addEventListener('mousemove', this.mouseMove);
         document.addEventListener('click', this.mouseClick);
 
-
-        //Adds sky experimental
-
-        this.sky = new Sky(this.#settings, this.#scene, this.#renderer);
-
     }
 
     Tick() {
-        this.sky!.tick(this.#camera, this.#settings, this.#renderer, this.#activePlanet);
+        this.sky?.tick(this.#camera, this.#settings, this.#renderer, this.#activePlanet);
         this.#sun?.Tick();
         this.#controls.update()
         this.#renderer.render(this.#scene, this.#camera);
@@ -106,6 +111,12 @@ class Global {
         shader.uniforms.u_cameraPos.value = this.#camera.position;
         this.#testScene.update();
 
+        // Only trigger once per key press
+        if (this.#helper.isePressed && !this.#wasEPressed) {
+            console.log('E key pressed — spawning cloud.');
+            spawnCloud(this.#scene);
+        }
+        this.#wasEPressed = this.#helper.isePressed;
 
     }
 
@@ -122,6 +133,10 @@ class Global {
         if (intersects.length > 0 && intersects[0].object.name === "Glass_Box") {
             console.log("tardistime");
             this.GenerateNewPlanet()
+        }
+        if (intersects.length > 0 && intersects[0].object.name === "MELON") {
+            console.log("melontonin");
+            disposeMelon(this.#scene);
         }
     }
 }

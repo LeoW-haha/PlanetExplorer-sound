@@ -4,6 +4,19 @@ import { Planet } from "./planet";
 import { Sun } from "./sun";
 import { seededRandom } from "three/src/math/MathUtils.js";
 
+function getRandomArbitrary(min : number, max : number) {
+  return Math.random() * (max - min) + min;
+}
+
+function randomPolarity() {
+    let num = Math.random()
+    if (num <= 0.5) {
+        return -1
+    } else {
+        return 1
+    }
+}
+
 export class Settings {
     Radius: number = 5
     FlatAColor: THREE.Color = new THREE.Color(Math.random(), Math.random(), Math.random())
@@ -29,9 +42,10 @@ export class Settings {
     PlanetSound: THREE.PositionalAudio | null = null;
     TardisPosition: THREE.Vector3 = new THREE.Vector3(7, 0, 0);
     TardisSound: THREE.PositionalAudio | null = null;
+    MelonPosition: THREE.Vector3 = new THREE.Vector3(10, 0, 3);
     SunColor: THREE.Color = new THREE.Color(Math.random(), Math.random(), Math.random())
     SunRadius: number = 500
-    SunPosition: THREE.Vector3 = new THREE.Vector3(30000.0, 0.0, 0)
+    SunPosition: THREE.Vector3= new THREE.Vector3(30000.0, 0, 0)
     SunZoom: number = 2
     SunSpeed: number = 0.2
     ToneMapFactor: number = 1.5
@@ -77,6 +91,7 @@ export class Settings {
         rendering.addBinding(this, "PlanetRoughness", { min: 0.0, max: 1.0, step: 0.01, label: "Planet Roughness" })
         rendering.addBinding(this, "PlanetReflectance", { color: { type: "float" }, label: "Planet Reflectance" })
         rendering.addBinding(this, "TardisPosition", { label: "TARDIS Position" });
+        rendering.addBinding(this, "MelonPosition", { label: "Melon Position" });
         let sound: FolderApi = this.Pane.addFolder({ title: "Sound" }).on("change", planet.UpdateUniforms.bind(planet))
         let soundButton = sound.addButton({title:"Toggle Sound"});
         this.PlanetBindings = [radius, planetCols, planetNoise, rendering, sound]
@@ -134,6 +149,7 @@ export class Settings {
         seed += 1
         this.BiomeNoiseSeed = this.HeightNoiseSeed = seededRandom(seed) * Number.MAX_SAFE_INTEGER
         seed += 1
+        this.SunColor = new THREE.Color(Math.random(), Math.random(), Math.random())
         // TODO: BiomeNoiseScale: number = 0.6
     }
 

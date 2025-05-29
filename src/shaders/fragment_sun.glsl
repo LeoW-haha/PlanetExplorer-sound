@@ -12,7 +12,7 @@ uniform float u_speed;
 
 void main()
 {
-    float pat = fbm(v_vertexPos * (u_zoom/ u_radius) + vec3(sin(u_Time * u_speed + v_vertexNormal.x), cos(u_Time * u_speed + v_vertexNormal.y), sin(u_Time * u_speed + v_vertexNormal.z))) + fbm(v_vertexNormal) - u_radius;
+    float pat = fbm(v_vertexPos * (u_zoom/ u_radius) + vec3(sin(u_Time * u_speed + v_vertexNormal.x), sin(u_Time * u_speed + v_vertexNormal.y), sin(u_Time * u_speed + v_vertexNormal.z))) + fbm(v_vertexNormal) - u_radius;
     vec3 newPos = v_vertexPos + v_vertexNormal * pat; 
 
     gl_FragColor = vec4(vec3(u_color1) + vec3(newPos.x), 1.0);

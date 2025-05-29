@@ -5,6 +5,19 @@ import FragmentShader from "./shaders/fragment_sun.glsl";
 import { SimplexNoise } from 'three/examples/jsm/Addons.js';
 import { seededRandom } from 'three/src/math/MathUtils.js';
 
+function getRandomArbitrary(min : number, max : number) {
+  return Math.random() * (max - min) + min;
+}
+
+function randomPolarity() {
+    let num = Math.random()
+    if (num <= 0.5) {
+        return -1
+    } else {
+        return 1
+    }
+}
+
 export class Sun {
     #sphere: THREE.Mesh | null = null
     #light: THREE.PointLight | null = null
@@ -12,11 +25,17 @@ export class Sun {
     #scene: THREE.Scene | null = null
     #noises: SimplexNoise[] = []
     #noiseOffsets: THREE.Vector3[] = []
+    #index: number | null = null
     #clock = new THREE.Clock();
 
+    getPosition() {
+        return this.#settings.SunPosition;
+    }
+
     GenerateMesh() {
-        if (this.#sphere !== null)
+        if (this.#sphere !== null) {
             this.#scene?.remove(this.#sphere)
+        }
         this.#sphere = new THREE.Mesh(new THREE.SphereGeometry(this.#settings.SunRadius), new THREE.ShaderMaterial({
             uniforms: {
                 u_Time: {value: 0.0},

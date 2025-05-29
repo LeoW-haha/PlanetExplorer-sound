@@ -85,7 +85,7 @@ export class Planet {
                 u_numberColorBands: { value: this.Settings.NumberColorBands },
                 u_cameraPos: { value: this.Settings.CameraPos },
                 u_lightPos: { value: this.Settings.SunPosition },
-                u_lightColor: { value: this.Settings.LightColor },
+                u_lightColor: { value: this.Settings.SunColor },
                 u_emissivity: { value: this.Settings.PlanetEmissivity },
                 u_roughness: { value: this.Settings.PlanetRoughness },
                 u_baseReflectance: { value: this.Settings.PlanetReflectance },
