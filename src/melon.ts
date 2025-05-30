@@ -3,7 +3,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { Settings } from './settings';
 import { Planet } from "./planet";
 
-export let melonModel: THREE.Object3D | null = null;
+let melonModel: THREE.Object3D | null = null;
 let melonLight: THREE.DirectionalLight | null = null;
 
 let settingsRef: Settings | null = null;
@@ -20,7 +20,7 @@ export function loadMelon(scene: THREE.Scene, settings: Settings, planet: Planet
     '/spacemelon.gltf',
     (gltf) => {
       melonModel = gltf.scene;
-      melonModel.scale.set(0.2, Math.random() * 0.5, 0.2);
+      melonModel.scale.set(0.5, Math.random() * 1, Math.random() * 1);
       if (settingsRef && settingsRef.Radius) {
           const theta = Math.random() * Math.PI * 2;
           const phi = Math.acos(2 * Math.random() - 1);
@@ -66,7 +66,7 @@ export function spawnCloud(scene: THREE.Scene): void {
   }
 
   loader.load(
-    '/cloud.gltf',
+    '/pinkcloud.gltf',
     (gltf) => {
       const cloud = gltf.scene;
 
@@ -74,14 +74,75 @@ export function spawnCloud(scene: THREE.Scene): void {
       cloud.scale.set(scale, scale, scale);
 
       const melonPos = melonModel!.position.clone();
-      const yOffset = 2;
+      const planetCenter = (planetRef && planetRef.Mesh)
+        ? planetRef.Mesh.position
+        : new THREE.Vector3(0, 0, 0);
 
-      cloud.position.set(melonPos.x, melonPos.y + yOffset, melonPos.z);
+      const direction = melonPos.clone().sub(planetCenter).normalize();
+      const cloudOffsetDistance = 2;
+      const cloudPosition = melonPos.clone().add(direction.multiplyScalar(cloudOffsetDistance));
 
-      cloud.rotation.set(Math.PI / 2, Math.random() * Math.PI * 2, 0);
+      cloud.position.copy(cloudPosition);
+      cloud.lookAt(cloud.position.clone().add(direction)); 
+      cloud.rotateX(Math.PI / 2); 
+      cloud.rotateY(Math.PI / 2);     
 
       clouds.push(cloud);
       scene.add(cloud);
+
+     cloud.traverse((child) => {
+        if ((child as THREE.Mesh).isMesh) {
+          const mesh = child as THREE.Mesh;
+          const matArray = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+          matArray.forEach(mat => {
+            if (mat instanceof THREE.MeshStandardMaterial) {
+              mat.transparent = true;
+              mat.opacity = 0;
+            }
+          });
+        }
+      });
+
+      clouds.push(cloud);
+      scene.add(cloud);
+
+      const fadeDuration = 1000;
+      const fadeStart = performance.now();
+
+      const animateOpacity = (time: number) => {
+        const elapsed = time - fadeStart;
+        const t = Math.min(elapsed / fadeDuration, 1);
+
+        cloud.traverse((child) => {
+          if ((child as THREE.Mesh).isMesh) {
+            const mesh = child as THREE.Mesh;
+            const matArray = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+            matArray.forEach(mat => {
+              if (mat instanceof THREE.MeshStandardMaterial) {
+                mat.opacity = t;
+              }
+            });
+          }
+        });
+
+        if (t < 1) requestAnimationFrame(animateOpacity);
+      };
+      requestAnimationFrame(animateOpacity);
+
+      setTimeout(() => {
+        scene.remove(cloud);
+        const index = clouds.indexOf(cloud);
+        if (index !== -1) clouds.splice(index, 1);
+
+        cloud.traverse((child) => {
+          if ((child as THREE.Mesh).isMesh) {
+            const mesh = child as THREE.Mesh;
+            if (mesh.geometry) mesh.geometry.dispose();
+            const matArray = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+            matArray.forEach(mat => mat.dispose());
+          }
+        });
+      }, 10000);
     },
     undefined,
     (err) => console.error('Error loading cloud model:', err)
@@ -89,14 +150,10 @@ export function spawnCloud(scene: THREE.Scene): void {
 }
 
 export function updateMelon(): void {
-  if (!settingsRef) return;
+  if (!settingsRef || !melonModel || !melonModel.parent) return; // <- parent check is crucial
+  melonModel.position.copy(settingsRef.MelonPosition);
 
-  if (melonModel) {
-    melonModel.position.copy(settingsRef.MelonPosition);
-    melonModel.rotation.y += 0.001;
-  }
-
-  if (melonLight && melonModel) {
+  if (melonLight) {
     melonLight.position.set(
       melonModel.position.x + 5,
       melonModel.position.y + 5,
@@ -108,12 +165,6 @@ export function updateMelon(): void {
 }
 
 export function disposeMelon(scene: THREE.Scene): void {
-  if (melonLight != null) {
-    scene.remove(melonLight);
-    melonLight.dispose();
-    melonLight = null;
-  }
-
   if (melonModel != null) {
     scene.remove(melonModel);
     melonModel.traverse((child) => {
@@ -127,7 +178,13 @@ export function disposeMelon(scene: THREE.Scene): void {
         }
       }
     });
-    melonModel = null;  
+    melonModel = null;
+  }
+
+  if (melonLight != null) {
+    scene.remove(melonLight);
+    melonLight.dispose();
+    melonLight = null;
   }
 }
 
@@ -144,6 +201,7 @@ export function disposeClouds(scene: THREE.Scene): void {
         } else {
           mesh.material.dispose();
         }
+        console.log("Melon model disposed");
       }
     });
   }

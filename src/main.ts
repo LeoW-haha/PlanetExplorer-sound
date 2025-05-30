@@ -5,7 +5,7 @@ import { Settings } from "./settings"
 import { collisionTest } from "./collisionTest.ts";
 import { stars } from "./stars.ts";
 import { disposeTardis, loadTardis, updateTardis } from './tardis.ts';
-import { disposeMelon, loadMelon, spawnCloud, disposeClouds, melonModel } from './melon.ts';
+import { disposeMelon, loadMelon, spawnCloud, disposeClouds} from './melon.ts';
 import { Sun } from "./sun.ts";
 import { Sky } from "./skycolor.js";
 import { Helper } from './helper';
@@ -32,6 +32,7 @@ class Global {
     get ActivePlanet() { return this.#activePlanet }
 
     GenerateNewPlanet() {
+        this.#wasEPressed = false;
         THREE.ColorManagement.enabled = false;
         this.#settings.Randomise(Math.random() * 100)
         if (this.ActivePlanet != null) {
@@ -115,8 +116,8 @@ class Global {
         if (this.#helper.isePressed && !this.#wasEPressed) {
             console.log('E key pressed — spawning cloud.');
             spawnCloud(this.#scene);
+                this.#wasEPressed = true;
         }
-        this.#wasEPressed = this.#helper.isePressed;
 
     }
 
@@ -126,19 +127,30 @@ class Global {
     }
 
     mouseClick(event: MouseEvent) {
-        const raycaster = new THREE.Raycaster();
-        raycaster.setFromCamera(this.#mouse, this.#camera);
-        const intersects = raycaster.intersectObjects(this.#scene.children, true);
+    const raycaster = new THREE.Raycaster();
+    raycaster.setFromCamera(this.#mouse, this.#camera);
+    const intersects = raycaster.intersectObjects(this.#scene.children, true);
 
-        if (intersects.length > 0 && intersects[0].object.name === "Glass_Box") {
+    if (intersects.length > 0) {
+        const clickedObject = intersects[0].object;
+
+        if (clickedObject.name === "Glass_Box") {
             console.log("tardistime");
-            this.GenerateNewPlanet()
+            this.GenerateNewPlanet();
         }
-        if (intersects.length > 0 && intersects[0].object.name === "MELON") {
-            console.log("melontonin");
+
+    let object = clickedObject;
+    while (object) {
+        if (object.name === "MELON") {
+            console.log("melontime");
             disposeMelon(this.#scene);
+            break;
+            }
+        object = object.parent;
         }
+
     }
+}
 }
 
 new Global()
