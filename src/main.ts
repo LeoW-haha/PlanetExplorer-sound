@@ -5,7 +5,8 @@ import { Settings } from "./settings"
 import { collisionTest } from "./collisionTest.ts";
 import { stars } from "./stars.ts";
 import { disposeTardis, loadTardis, updateTardis } from './tardis.ts';
-import { disposeMelon, loadMelon, spawnCloud, disposeClouds} from './melon.ts';
+import { loadMelon, disposeMelon, spawnCloud, disposeClouds} from './melon.ts';
+import { loadWormhole, updateWormhole, loadLightning, updateLightning } from './wormhole.ts';
 import { Sun } from "./sun.ts";
 import { Sky } from "./skycolor.js";
 import { Helper } from './helper';
@@ -22,6 +23,9 @@ class Global {
     #stars: stars
     #sun: Sun
     #tardis
+    #wormhole: THREE.Mesh;
+    #generateNewCount: number = 0;
+    #melonEatSound: THREE.Audio | null = null;
     #helper: Helper;
     #wasEPressed: boolean = false;
     #listener: THREE.AudioListener | null = null
@@ -33,6 +37,7 @@ class Global {
 
     GenerateNewPlanet() {
         this.#wasEPressed = false;
+        this.#generateNewCount++;
         THREE.ColorManagement.enabled = false;
         this.#settings.Randomise(Math.random() * 100)
         if (this.ActivePlanet != null) {
@@ -66,6 +71,13 @@ class Global {
         disposeMelon(this.#scene)
         loadMelon(this.#scene, this.#settings, this.#activePlanet);
         disposeClouds(this.#scene); 
+        const maxWormhole = 1.0;
+        const growth = 0.1;
+        const scale = Math.min(this.#generateNewCount * growth, maxWormhole);
+        this.#wormhole.scale.set(scale, scale, scale);
+        const lightningBranch = loadLightning(new THREE.Vector3(0, 0, -80));
+        lightningBranch.name = "LightningShoot";
+        this.#scene.add(lightningBranch);
         this.sky = new Sky(this.#settings, this.#scene, this.#renderer);
     }
 
@@ -86,6 +98,9 @@ class Global {
         this.#settings = new Settings();
         this.#helper = new Helper();
         this.#helper.listener();
+        this.#wormhole = loadWormhole();
+        this.#wormhole.scale.set(1, 1, 1);
+        this.#scene.add(this.#wormhole);
         this.#settings.Pane.addButton({
             title: "Generate",
             label: "New Planet"
@@ -98,6 +113,13 @@ class Global {
         this.mouseClick = this.mouseClick.bind(this);
         document.addEventListener('mousemove', this.mouseMove);
         document.addEventListener('click', this.mouseClick);
+
+        const eatSoundLoader = new THREE.AudioLoader();
+        this.#melonEatSound = new THREE.Audio(this.#listener);
+        eatSoundLoader.load('sound/eatingEffect.ogg', (buffer) => {
+            this.#melonEatSound!.setBuffer(buffer);
+            this.#melonEatSound!.setVolume(0.35); // adjust as needed
+        });
 
     }
 
@@ -118,6 +140,9 @@ class Global {
             spawnCloud(this.#scene);
                 this.#wasEPressed = true;
         }
+
+        updateWormhole(this.#wormhole, performance.now() * 0.001, this.#generateNewCount);
+        updateLightning(performance.now() * 0.001);
 
     }
 
@@ -143,6 +168,9 @@ class Global {
     while (object) {
         if (object.name === "MELON") {
             console.log("melontime");
+            if (this.#melonEatSound && this.#melonEatSound.buffer) {
+                this.#melonEatSound.play();
+            }
             disposeMelon(this.#scene);
             break;
             }
